@@ -1,0 +1,32 @@
+<solrVersions>
+    <solrVersion>
+        <version>4.1.0</version>
+        <sitecore>CMS 7.0 - XP 8.0</sitecore>
+        <port>8941</port>
+    </solrVersion>
+    <solrVersion>
+        <version>4.10.0</version>
+        <sitecore>XP 8.1</sitecore>
+        <port>89410</port>
+    </solrVersion>
+    <solrVersion>
+        <version>5.1.0</version>
+        <sitecore>XP 8.2</sitecore>
+        <port>8951</port>
+    </solrVersion>
+    <solrVersion>
+        <version>6.6.2</version>
+        <sitecore>XP 9.0</sitecore>
+        <port>8951</port>
+    </solrVersion>
+    <solrVersion>
+        <version>7.2.1</version>
+        <sitecore>XP 9.1</sitecore>
+        <port>8972</port>
+    </solrVersion>
+    <solrVersion>
+        <version>7.5.0</version>
+        <sitecore>XP 9.2</sitecore>
+        <port>8975</port>
+    </solrVersion>
+</solrVersions>
