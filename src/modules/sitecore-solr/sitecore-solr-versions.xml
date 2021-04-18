@@ -17,7 +17,7 @@
     <solrVersion>
         <version>6.6.2</version>
         <sitecore>XP 9.0</sitecore>
-        <port>8951</port>
+        <port>8966</port>
     </solrVersion>
     <solrVersion>
         <version>7.2.1</version>

@@ -26,7 +26,7 @@ function Get-SitecoreSolrOptions {
         $SolrVersions = Get-SolrVersionsXML
 
         $SolrVersions.keys | ForEach-Object {
-            $DisplayName = "Solr $($_) ($($SolrVersions[$_].Sitecore))" 
+            $DisplayName = "Solr $($_) ($($SolrVersions[$_].Sitecore), Port: $($SolrVersions[$_].Port))" 
             $SolrOptions.Add($_, $DisplayName) 
         }
 

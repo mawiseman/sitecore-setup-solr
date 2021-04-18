@@ -3,10 +3,15 @@ The package allows you to install Solr with a valid SSL certificate via Powershe
 
 # Pre-requisites
 
-Missing packages will be automatically installed by chocolatey... including chocolatey.
+Missing packages will be automatically installed by chocolatey... including chocolatey. You may need to re-open a new powershell instance after install
 
 - nssm - the Non-Sucking Service Manager
 - Java SDK
+
+Enable Remote Script Execution
+```
+Set-ExecutionPolicy Bypass -Scope LocalMachine -Force
+```
 
 # Usage
 

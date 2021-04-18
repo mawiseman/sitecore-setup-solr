@@ -1,3 +1,5 @@
+$SolrServicePrefix = "solr-"
+
 function InstallSolr {
     [CmdLetBinding()]
     param ( 
@@ -6,7 +8,7 @@ function InstallSolr {
     )
     begin {
         $SolrRoot = "C:\solr\"
-        $SolrVersionName = "solr-$solrVersion"
+        $SolrVersionName = $SolrServicePrefix + $solrVersion
     }
     process {
 
@@ -198,7 +200,9 @@ function DownloadAndInstallSolr {
         Write-Host ""
         Write-Host "Installing the solr Service: $solrVersionName"
 
-        nssm install "$solrVersionName" "$solrRoot\$solrVersionName\bin\solr.cmd" "-f -p $solrPort"
+        $SolrPath = Join-Path $solrRoot $solrVersionName
+
+        nssm install "$solrVersionName" "$SolrPath\bin\solr.cmd" "-f -p $solrPort"
         nssm start "$solrVersionName"
     }
 }
@@ -271,6 +275,7 @@ function TrustSolrSSL {
         
         Write-Host 'SSL certificate is now locally trusted. (added as root CA)'
 
+        UpdateSolrCmd -solrCmdPath "$solrRoot\$solrVersionName\bin\solr.cmd"
         UpdateSolrInCmd -solrInCmdPath "$solrRoot\$solrVersionName\bin\solr.in.cmd"
 
         if($solrDomain -ne "localhost") {
@@ -281,6 +286,21 @@ function TrustSolrSSL {
     }
 }
 
+'''
+In more recent version of the JDK, some parameters are no longer supported
+'''
+function UpdateSolrCmd {
+    param ( 
+        [Parameter(Mandatory = $True)][string]$solrCmdPath
+    )
+    begin {
+        #remember to escape +, ^ with \+, \^
+        (Get-Content $solrCmdPath) | Foreach-Object {
+            $_ -replace '-XX:\+UseConcMarkSweepGC \^', '' `
+            } | Set-Content $solrCmdPath
+    }
+}
+
 function UpdateSolrInCmd {
     param ( 
         [Parameter(Mandatory = $True)][string]$solrInCmdPath
@@ -288,14 +308,14 @@ function UpdateSolrInCmd {
     begin {
 
         (Get-Content $solrInCmdPath) | Foreach-Object {
-            $_ -replace 'REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks',     'set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks' `
-               -replace 'REM set SOLR_SSL_KEY_STORE_PASSWORD=secret',               'set SOLR_SSL_KEY_STORE_PASSWORD=secret' `
-               -replace 'REM set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.jks',   'set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.jks' `
-               -replace 'REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret',             'set SOLR_SSL_TRUST_STORE_PASSWORD=secret' `
-               -replace 'REM set SOLR_SSL_NEED_CLIENT_AUTH=false',                  'set SOLR_SSL_NEED_CLIENT_AUTH=false' `
-               -replace 'REM set SOLR_SSL_WANT_CLIENT_AUTH=false',                  'set SOLR_SSL_WANT_CLIENT_AUTH=false'`
-               -replace 'REM set SOLR_SSL_KEY_STORE_TYPE=JKS',                      'set SOLR_SSL_KEY_STORE_TYPE=JKS'`
-               -replace 'REM set SOLR_SSL_TRUST_STORE_TYPE=JKS',                    'set SOLR_SSL_TRUST_STORE_TYPE=JKS'
+            $_ -replace 'REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.(jks|p12)',   'set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.p12' `
+               -replace 'REM set SOLR_SSL_KEY_STORE_PASSWORD=secret',                   'set SOLR_SSL_KEY_STORE_PASSWORD=secret' `
+               -replace 'REM set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.(jks|p12)', 'set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.p12' `
+               -replace 'REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret',                 'set SOLR_SSL_TRUST_STORE_PASSWORD=secret' `
+               -replace 'REM set SOLR_SSL_NEED_CLIENT_AUTH=false',                      'set SOLR_SSL_NEED_CLIENT_AUTH=false' `
+               -replace 'REM set SOLR_SSL_WANT_CLIENT_AUTH=false',                      'set SOLR_SSL_WANT_CLIENT_AUTH=false'`
+               -replace 'REM set SOLR_SSL_KEY_STORE_TYPE=JKS',                          'set SOLR_SSL_KEY_STORE_TYPE=JKS'`
+               -replace 'REM set SOLR_SSL_TRUST_STORE_TYPE=JKS',                        'set SOLR_SSL_TRUST_STORE_TYPE=JKS'
             } | Set-Content $solrInCmdPath
     }
 }
@@ -366,5 +386,36 @@ function ValidateSolr {
         }
     }
 }
+function GetSolrServices() {
+    begin {
+        $SolrServiceFilter = $SolrServicePrefix + "*"
+    }
+    process {
+        Get-Service $SolrServiceFilter | Select-Object -ExpandProperty Name
+    }
+}
 
-Export-ModuleMember InstallSolr
+function UninstallSolr() {
+    param ( 
+        [Parameter(Mandatory = $True)][string]$solrVersionName
+    )
+    begin {
+        
+    }
+    process {
+
+        $SolrServiceFolder = nssm get $solrVersionName AppDirectory
+
+        ### UN-INSTALL SOLR SERVICE
+
+        nssm stop "$solrVersionName"
+        nssm remove "$solrVersionName" confirm
+
+        ### DELETE SOLR FOLDER
+
+        $SolrRootFolder = $SolrServiceFolder -replace "\\bin", ""
+        Remove-Item -LiteralPath $SolrRootFolder -Force -Recurse
+    }
+}
+
+Export-ModuleMember InstallSolr, GetSolrServices, UninstallSolr
