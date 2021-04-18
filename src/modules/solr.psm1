@@ -399,19 +399,26 @@ function UninstallSolr() {
     param ( 
         [Parameter(Mandatory = $True)][string]$solrVersionName
     )
-    begin {
-        
-    }
     process {
 
         $SolrServiceFolder = nssm get $solrVersionName AppDirectory
 
         ### UN-INSTALL SOLR SERVICE
+        Write-Host ""
+        Write-Host "==================================================" -ForegroundColor Green
+        Write-Host "Removing Solr Service" -ForegroundColor Green
+        Write-Host "==================================================" -ForegroundColor Green
+
 
         nssm stop "$solrVersionName"
         nssm remove "$solrVersionName" confirm
 
         ### DELETE SOLR FOLDER
+
+        Write-Host ""
+        Write-Host "==================================================" -ForegroundColor Green
+        Write-Host "Deleting Solr Folder" -ForegroundColor Green
+        Write-Host "==================================================" -ForegroundColor Green
 
         $SolrRootFolder = $SolrServiceFolder -replace "\\bin", ""
         Remove-Item -LiteralPath $SolrRootFolder -Force -Recurse
