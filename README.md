@@ -1,21 +1,22 @@
 # Introduction
-The package allows you to install Solr with a valid SSL certificate via Powershell.
+This script allows you to **install** and **un-install** Solr with a valid SSL certificate via Powershell.
 
 # Pre-requisites
-
-Missing packages will be automatically installed by chocolatey... including chocolatey. You may need to re-open a new powershell instance after install
-
-- nssm - the Non-Sucking Service Manager
-- Java SDK
 
 Enable Remote Script Execution
 ```
 Set-ExecutionPolicy Bypass -Scope LocalMachine -Force
 ```
 
+Missing packages will be automatically installed by chocolatey... including chocolatey. You may need to re-open a new powershell instance after install
+
+- chocolatey: https://chocolatey.org/
+- nssm - the Non-Sucking Service Manager: https://nssm.cc/
+- Open JDK: https://openjdk.java.net/
+
 # Usage
 
-## Guided Mode
+## Guided Install
 
 The default options install solr based of your version of sitecore. 
 
@@ -28,12 +29,12 @@ PS C:\projects\sitecore-solr-setup\src> .\install.ps1
 3. Enjoy the show
 
 ### Notes
-The valid options are stored in an xml file and are mapped to Sitecore's compatibility table
+Pre-configured options are stored in an xml file and are mapped to Sitecore's compatibility table
 
 - Sitecore Solr versions: \modules\sitecore-solr\sitecore-solr-versions.xml
 - Sitecore Solr Compatibility table: https://kb.sitecore.net/articles/227897 
 
-## Direct
+## Direct Install
 
 This allows you to integrate directly with your setup process
 
@@ -41,6 +42,16 @@ This allows you to integrate directly with your setup process
 PS C:\projects\sitecore-solr-setup\src> Import-Module .\modules\solr.psm1
 PS C:\projects\sitecore-solr-setup\src> InstallSolr -solrVersion 7.5.0 -solrPort 8975
 ```
+
+## Guided Uninstall
+
+1. From an elevated powershell prompt run
+```
+PS C:\projects\sitecore-solr-setup\src> .\uninstall.ps1
+```
+
+2. Select the version of Solr you'd like to install
+3. Enjoy the show
 
 # References
 - https://kamsar.net/index.php/2017/10/Quickly-add-SSL-to-Solr/
