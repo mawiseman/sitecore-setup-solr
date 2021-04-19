@@ -23,7 +23,7 @@ if($Action -eq "cancel") {
 }
 elseif($Action -eq "custom") {
 	InstallSolr
-	Write-Ascii "Solr $SelectedOption" -ForegroundColor Green
+	Write-Ascii "Solr $Action" -ForegroundColor Green
 }
 else {
 	$SolrOption = Get-SitecoreSolrOption -version $Action

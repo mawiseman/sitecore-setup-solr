@@ -11,8 +11,8 @@ function InstallSolr {
         $SolrVersionName = $SolrServicePrefix + $solrVersion
     }
     process {
-
-        # Check Pre-Requisites
+        Write-Host ""
+        Write-Host "Installing Solr: $solrVersion on port: $solrPort" -ForegroundColor Green
 
         Write-Host ""
         Write-Host "==================================================" -ForegroundColor Green
@@ -24,21 +24,24 @@ function InstallSolr {
         Validate7zInstalled
         ValidateJavaInstalled
         
+        $serviceExists = ValidateServiceExists -solrVersionName $SolrVersionName
+        if($serviceExists) {
+            UninstallSolr -solrVersionName $SolrVersionName
+        }
+
         Write-Host ""
         Write-Host "==================================================" -ForegroundColor Green
         Write-Host "Installing Solr" -ForegroundColor Green
         Write-Host "==================================================" -ForegroundColor Green
-        
-        Write-Host ""
-        Write-Host "Downloading and extracting" -ForegroundColor Green
+
         DownloadAndInstallSolr -solrVersion $solrVersion -solrPort $solrPort -solrRoot $SolrRoot -solrVersionName $SolrVersionName
         
         Write-Host ""
-        Write-Host "Generating SSL Certificate" -ForegroundColor Green
+        Write-Host "Generate SSL Certificate" -ForegroundColor Green
         TrustSolrSSL -solrRoot $SolrRoot -solrVersionName $SolrVersionName
         
         Write-Host ""
-        Write-Host "Validating Install" -ForegroundColor Green
+        Write-Host "Validate Install" -ForegroundColor Green
         ValidateSolr -solrPort $solrPort
     }
 }
@@ -95,6 +98,22 @@ function ValidateJavaInstalled {
     }
 }
 
+function ValidateServiceExists {
+    param ( 
+        [Parameter(Mandatory = $True)][string]$solrVersionName
+    )
+    process {
+        $services = GetSolrServices
+
+        if($services.length -gt 0) {
+            $services.Contains($solrVersionName)
+        }
+        else {
+            $false
+        }
+    }
+}
+
 function GetJavaPath {
     $java = $null
 
@@ -144,32 +163,16 @@ function DownloadAndInstallSolr {
     )
     begin {
         $SolrDownload = "http://archive.apache.org/dist/lucene/solr/$solrVersion/$solrVersionName.zip"
-        $SolrZipPath = "$solrRoot\$solrVersionName.zip"
+        $SolrZipPath = $(Join-Path $solrRoot $solrVersionName) + '.zip'
     }
     process {
-
-        ### IF SOLR IS INSTALLED RESTART IT
-
-        Write-Host "Attempting to restart existing service '$solrVersionName'"
-        try {
-            nssm restart $solrVersionName
-            
-            if($LastExitCode -eq 0) {
-                Write-Host "Solr service '$solrVersionName' detected and restarted";
-                exit 0;
-            }
-        }
-        catch {
-            # ignore error as it indicates service does not exist
-            $LastExitCode = 0
-        }
 
         ### ENSURE SOLR DIRECTORY EXISTS
 
         if (!(Test-Path $solrRoot))
         {
             Write-Host ""
-            Write-Host "Creatng Solr root: '$solrRoot'"
+            Write-Host "Creatng Solr root: '$solrRoot'" -ForegroundColor Green
 
             mkdir $solrRoot
         }
@@ -179,7 +182,7 @@ function DownloadAndInstallSolr {
         if (!(Test-Path $SolrZipPath))
         {
             Write-Host ""
-            Write-Host "Downloading solr zip: $SolrZipPath"
+            Write-Host "Downloading solr zip: $SolrZipPath" -ForegroundColor Green
 
             Invoke-WebRequest -Uri $SolrDownload -OutFile $SolrZipPath
         }
@@ -190,15 +193,13 @@ function DownloadAndInstallSolr {
         if (!(Test-Path $SolrUnpack))
         {
             Write-Host ""
-            Write-Host "Extracting solr zip from: $SolrZipPath to: $solrRoot"
+            Write-Host "Extracting solr zip from: $SolrZipPath to: $solrRoot" -ForegroundColor Green
 
             & 7z x "${SolrZipPath}" -o"${solrRoot}" 
         }
 
-        ### INSTALL SOLR SERVICE
-
         Write-Host ""
-        Write-Host "Installing the solr Service: $solrVersionName"
+        Write-Host "Installing Solr Service: $solrVersionName" -ForegroundColor Green
 
         $SolrPath = Join-Path $solrRoot $solrVersionName
 
@@ -218,7 +219,7 @@ function TrustSolrSSL {
         $Clobber = $True
         $ErrorActionPreference = 'Stop'
 
-        $KeystoreFile = "$solrRoot\$solrVersionName\server\etc\solr-ssl.keystore.jks";
+        $KeystoreFile = $(Join-Path $solrRoot $solrVersionName) + "\server\etc\solr-ssl.keystore.jks";
     }
     process {
         ### SET UP SSL
@@ -370,7 +371,7 @@ function ValidateSolr {
                 $StatusCode = $WebResponse.StatusCode
             }
             catch { 
-                Write-Host $_.Exception.Message -ForegroundColor Red
+                Write-Host $_.Exception.Message -ForegroundColor Yellow
                 $StatusCode = 500
             }
 
@@ -386,6 +387,7 @@ function ValidateSolr {
         }
     }
 }
+
 function GetSolrServices() {
     begin {
         $SolrServiceFilter = $SolrServicePrefix + "*"
@@ -402,26 +404,25 @@ function UninstallSolr() {
     process {
 
         $SolrServiceFolder = nssm get $solrVersionName AppDirectory
+        $SolrRootFolder = $SolrServiceFolder -replace "\\bin", ""
 
-        ### UN-INSTALL SOLR SERVICE
         Write-Host ""
         Write-Host "==================================================" -ForegroundColor Green
-        Write-Host "Removing Solr Service" -ForegroundColor Green
+        Write-Host "Uninstalling Solr" -ForegroundColor Green
         Write-Host "==================================================" -ForegroundColor Green
 
+        Write-Host ""
+        Write-Host "Stop service: $solrVersionName" -ForegroundColor Green
 
         nssm stop "$solrVersionName"
         nssm remove "$solrVersionName" confirm
 
-        ### DELETE SOLR FOLDER
-
         Write-Host ""
-        Write-Host "==================================================" -ForegroundColor Green
-        Write-Host "Deleting Solr Folder" -ForegroundColor Green
-        Write-Host "==================================================" -ForegroundColor Green
+        Write-Host "Delete folder: $SolrRootFolder" -ForegroundColor Green
 
-        $SolrRootFolder = $SolrServiceFolder -replace "\\bin", ""
         Remove-Item -LiteralPath $SolrRootFolder -Force -Recurse
+
+        Write-Host "Removed: $SolrRootFolder"
     }
 }
 
