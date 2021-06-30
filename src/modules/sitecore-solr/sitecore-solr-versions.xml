@@ -34,4 +34,9 @@
         <sitecore>XP 9.3</sitecore>
         <port>8981</port>
     </solrVersion>
+    <solrVersion>
+        <version>8.4.0</version>
+        <sitecore>XP 10</sitecore>
+        <port>8984</port>
+    </solrVersion>
 </solrVersions>
