@@ -287,9 +287,6 @@ function TrustSolrSSL {
     }
 }
 
-'''
-In more recent version of the JDK, some parameters are no longer supported
-'''
 function UpdateSolrCmd {
     param ( 
         [Parameter(Mandatory = $True)][string]$solrCmdPath
@@ -297,7 +294,8 @@ function UpdateSolrCmd {
     begin {
         #remember to escape +, ^ with \+, \^
         (Get-Content $solrCmdPath) | Foreach-Object {
-            $_ -replace '-XX:\+UseConcMarkSweepGC \^', '' `
+            $_  -replace '-XX:\+UseConcMarkSweepGC \^',     '' `                # In more recent version of the JDK, some parameters are no longer supported
+                replace 'if "%%a" GEQ "9" (',               'if %%a GEQ 9 (' `  # https://stackoverflow.com/questions/46125765/java-1-7-or-later-is-required-to-run-solr-but-1-8-installed
             } | Set-Content $solrCmdPath
     }
 }
