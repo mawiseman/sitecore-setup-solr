@@ -263,7 +263,7 @@ function TrustSolrSSL {
 
         Write-Host ''
         Write-Host 'Generating JKS keystore...'
-        & $KeyTool -genkeypair -alias solr-ssl -keyalg RSA -keysize 2048 -keypass $KeystorePassword -storepass $KeystorePassword -validity 9999 -keystore $KeystoreFile -ext SAN=DNS:$solrDomain,IP:127.0.0.1 -dname "CN=$solrDomain, OU=Organizational Unit, O=Organization, L=Location, ST=State, C=Country"
+        & $KeyTool -genkeypair -alias $solrVersionName -keyalg RSA -keysize 2048 -keypass $KeystorePassword -storepass $KeystorePassword -validity 9999 -keystore $KeystoreFile -ext SAN=DNS:$solrDomain,IP:127.0.0.1 -dname "CN=$solrDomain, OU=Organizational Unit, O=Organization, L=Location, ST=State, C=Country"
 
         Write-Host ''
         Write-Host 'Generating .p12 to import to Windows...'
