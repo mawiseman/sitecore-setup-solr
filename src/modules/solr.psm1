@@ -306,6 +306,8 @@ function UpdateSolrInCmd {
     )
     begin {
 
+        # Configure SSL
+
         (Get-Content $solrInCmdPath) | Foreach-Object {
             $_ -replace 'REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.(jks|p12)',   'set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.p12' `
                -replace 'REM set SOLR_SSL_KEY_STORE_PASSWORD=secret',                   'set SOLR_SSL_KEY_STORE_PASSWORD=secret' `
@@ -316,6 +318,14 @@ function UpdateSolrInCmd {
                -replace 'REM set SOLR_SSL_KEY_STORE_TYPE=JKS',                          'set SOLR_SSL_KEY_STORE_TYPE=JKS'`
                -replace 'REM set SOLR_SSL_TRUST_STORE_TYPE=JKS',                        'set SOLR_SSL_TRUST_STORE_TYPE=JKS'
             } | Set-Content $solrInCmdPath
+
+        # Apply log4j hotfix
+        # https://solr.apache.org/security.html#apache-solr-affected-by-apache-log4j-cve-2021-44228
+
+        Add-Content $solrInCmdPath ""
+        Add-Content $solrInCmdPath "REM Apply log4j hotfix: https://solr.apache.org/security.html#apache-solr-affected-by-apache-log4j-cve-2021-44228"
+        Add-Content $solrInCmdPath "set SOLR_OPTS=%SOLR_OPTS% -Dlog4j2.formatMsgNoLookups=true"
+        
     }
 }
 
