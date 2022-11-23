@@ -292,10 +292,15 @@ function UpdateSolrCmd {
         [Parameter(Mandatory = $True)][string]$solrCmdPath
     )
     begin {
-        #remember to escape +, ^ with \+, \^
+
+        # In more recent version of the JDK, some parameters are no longer supported
         (Get-Content $solrCmdPath) | Foreach-Object {
-            $_  -replace '-XX:\+UseConcMarkSweepGC \^',     '' `                # In more recent version of the JDK, some parameters are no longer supported
-                replace 'if "%%a" GEQ "9" (',               'if %%a GEQ 9 (' `  # https://stackoverflow.com/questions/46125765/java-1-7-or-later-is-required-to-run-solr-but-1-8-installed
+            $_  -replace '-XX:\+UseConcMarkSweepGC \^', ''                      
+            } | Set-Content $solrCmdPath
+        
+        # https://stackoverflow.com/questions/46125765/java-1-7-or-later-is-required-to-run-solr-but-1-8-installed
+        (Get-Content $solrCmdPath) | Foreach-Object {
+            $_  -replace 'if "%%a" GEQ "9" \(',         'if %%a GEQ 9 (' `    
             } | Set-Content $solrCmdPath
     }
 }
