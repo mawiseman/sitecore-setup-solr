@@ -67,7 +67,7 @@ function ValidateNssmIntalled {
     }
     else {
         Write-Host "nssm is required. Installing now..." -ForegroundColor Red
-        & cinst nssm -y
+        & choco install nssm -y
     } 
 }
 
@@ -80,7 +80,7 @@ function Validate7zInstalled {
     }
     else {
         Write-Host "7-Zip is required. Installing now..." -ForegroundColor Red
-        & cinst 7zip.install -y
+        & choco install 7zip.install -y
     } 
 }
 
@@ -92,7 +92,7 @@ function ValidateJavaInstalled {
 
     if($null -eq $Java) {
         Write-Host "Java Runtime is required. Installing now..." -ForegroundColor Red
-        & cinst openjdk -y
+        & choco install openjdk -y
 
         exit -1
     }

@@ -36,7 +36,17 @@
     </solrVersion>
     <solrVersion>
         <version>8.4.0</version>
-        <sitecore>XP 10</sitecore>
+        <sitecore>XP 10 - XP 10.1</sitecore>
         <port>8984</port>
+    </solrVersion>
+    <solrVersion>
+        <version>8.8.2</version>
+        <sitecore>XP 10.2</sitecore>
+        <port>8988</port>
+    </solrVersion>
+    <solrVersion>
+        <version>8.11.2</version>
+        <sitecore>XP 10.3</sitecore>
+        <port>9811</port>
     </solrVersion>
 </solrVersions>
